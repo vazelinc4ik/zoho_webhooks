@@ -7,9 +7,10 @@ from fastapi import FastAPI, Request
 
 app = FastAPI()
 
-@app.post("/zoho-weebhooks/inventory-adjustment")
+@app.post("/zoho-webhooks/inventory-adjustment")
 async def adjust_eckwid_inventory(
     request: Request
 ) -> None:
-    print(request)
+    data = await request.json()
+    print(data)
 
