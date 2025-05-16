@@ -9,7 +9,7 @@ class ZohoSettings(Base):
     zoho_inventory_adjustment_secret: str
     zoho_fbm_sales_secret: str
 
-class Settings:
+class Settings(Base):
     zoho_settings: ZohoSettings
 
 settings = Settings()
