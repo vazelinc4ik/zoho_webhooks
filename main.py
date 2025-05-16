@@ -1,7 +1,7 @@
 
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Header
 
 
 
@@ -9,9 +9,10 @@ app = FastAPI()
 
 @app.post("/zoho-webhooks/inventory-adjustment")
 async def adjust_eckwid_inventory_by_user_input(
-    request: Request
+    request: Request,
 ) -> dict:
     data = await request.json()
+    print("Headers:", dict(request.headers))
     print(data)
     return {"status": "ok"}
 
