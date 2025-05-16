@@ -1,27 +1,47 @@
 
 
 import uvicorn
-from fastapi import FastAPI, Request, Header
+from fastapi import (
+    Depends, 
+    FastAPI,
+    HTTPException, 
+    Request
+)
 
-
+from utils.security import (
+    ZohoSalesWebhookValidator,
+    ZohoInventoryWebhookValidator
+)
 
 app = FastAPI()
 
 @app.post("/zoho-webhooks/inventory-adjustment")
 async def adjust_eckwid_inventory_by_user_input(
     request: Request,
+    is_signature_valid: bool = Depends(ZohoInventoryWebhookValidator.validate_request)
 ) -> dict:
-    data = await request.json()
-    print("Headers:", dict(request.headers))
-    print(data)
+    
+    if not is_signature_valid:
+        raise HTTPException(status_code=403, detail="Invalid signature")
+    
+    payload = await request.json()
+
+    print(payload)
+
     return {"status": "ok"}
 
 @app.post("/zoho-webhooks/sales")
 async def adjust_eckwid_inventory_by_fbm_sale(
-    request: Request
+    request: Request,
+    is_signature_valid: bool = Depends(ZohoSalesWebhookValidator.validate_request)
 ) -> dict:
-    data = await request.json()
-    print(data)
+    if not is_signature_valid:
+        raise HTTPException(status_code=403, detail="Invalid signature")
+    
+    payload = await request.json()
+
+    print(payload)
+    
     return {"status": "ok"}
 
 @app.post("/eckwid-webhooks/sales")
