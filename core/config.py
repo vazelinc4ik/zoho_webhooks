@@ -10,6 +10,6 @@ class ZohoSettings(Base):
     zoho_fbm_sales_secret: str
 
 class Settings:
-    zoho_settings: ZohoSettings
+    zoho_settings = ZohoSettings()
 
 settings = Settings()
