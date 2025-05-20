@@ -1,7 +1,9 @@
+from typing import Optional
 from fastapi import (
     Depends, 
     FastAPI,
-    HTTPException, 
+    HTTPException,
+    Query, 
     Request
 )
 
@@ -52,8 +54,13 @@ async def create_zoho_inventory_sales_order(
 
 @app.get("/auth/zoho/callback")
 async def proceed_zoho_callback(
-    request: Request
+    code: Optional[str] = Query(None),
+    location: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
 ) -> dict:
-    data = await request.json()
-    print(data)
+    if error:
+        return {"error": f"Zoho OAuth error: {error}"}
+    
+    print(f"code: {code}\nlocation: {location}")
+
     return {"status": "ok"}
