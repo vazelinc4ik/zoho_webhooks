@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from fastapi import (
     Depends, 
     FastAPI,
@@ -6,11 +6,12 @@ from fastapi import (
     Query, 
     Request
 )
-
+from fastapi.responses import RedirectResponse
 
 from utils.security import (
     ZohoSalesWebhookValidator,
-    ZohoInventoryWebhookValidator
+    ZohoInventoryWebhookValidator,
+    generate_zoho_auth_uri
 )
 
 app = FastAPI()
@@ -64,3 +65,10 @@ async def proceed_zoho_callback(
     print(f"code: {code}\nlocation: {location}")
 
     return {"status": "ok"}
+
+@app.get("/auth/zoho")
+async def auth_app_in_zoho(
+    scopes: Optional[List[str]] = Query(None)
+) -> RedirectResponse:
+    redirect_url = generate_zoho_auth_uri(scopes)
+    return RedirectResponse(url=redirect_url)
