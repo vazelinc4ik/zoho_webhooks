@@ -9,7 +9,23 @@ class ZohoSettings(Base):
     zoho_inventory_adjustment_secret: str
     zoho_fbm_sales_secret: str
 
+class DatabaseSettings(Base):
+    DB_HOST: str
+    DB_PORT: int
+    DB_USER: str
+    DB_PASS: str
+    DB_NAME: str
+    
+    @property
+    def db_url(self) -> str:
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+class EcwidSettings(Base):
+    ecwid_app_secret: str
+
 class Settings:
     zoho_settings = ZohoSettings()
+    database_settings = DatabaseSettings()
+    ecwid_settings = EcwidSettings()
 
 settings = Settings()

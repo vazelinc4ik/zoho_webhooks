@@ -1,12 +1,10 @@
-
-
-import uvicorn
 from fastapi import (
     Depends, 
     FastAPI,
     HTTPException, 
     Request
 )
+
 
 from utils.security import (
     ZohoSalesWebhookValidator,
@@ -41,11 +39,19 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     payload = await request.json()
 
     print(payload)
-    
+
     return {"status": "ok"}
 
 @app.post("/eckwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(
+    request: Request
+) -> dict:
+    data = await request.json()
+    print(data)
+    return {"status": "ok"}
+
+@app.get("/auth/zoho/callback")
+async def proceed_zoho_callback(
     request: Request
 ) -> dict:
     data = await request.json()
