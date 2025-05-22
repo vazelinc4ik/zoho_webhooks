@@ -68,7 +68,7 @@ async def proceed_zoho_callback(
     print(tokens_url)
     response = requests.post(url=tokens_url)
 
-    print(response.json())
+    print("Zoho response:", response.text)
 
     return {"status": "ok"}
 
