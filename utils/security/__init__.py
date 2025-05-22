@@ -1,4 +1,7 @@
-from .auth import generate_zoho_auth_uri
+from .auth import (
+    generate_zoho_auth_uri,
+    generate_zoho_tokens_url
+)
 from .validators import (
     ZohoInventoryWebhookValidator,
     ZohoSalesWebhookValidator
@@ -7,5 +10,6 @@ from .validators import (
 __all__ = [
     "ZohoInventoryWebhookValidator",
     "ZohoSalesWebhookValidator",
-    "generate_zoho_auth_uri"
+    "generate_zoho_auth_uri",
+    "generate_zoho_tokens_url"
 ]

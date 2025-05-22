@@ -7,11 +7,13 @@ from fastapi import (
     Request
 )
 from fastapi.responses import RedirectResponse
+import requests
 
 from utils.security import (
     ZohoSalesWebhookValidator,
     ZohoInventoryWebhookValidator,
-    generate_zoho_auth_uri
+    generate_zoho_auth_uri,
+    generate_zoho_tokens_url,
 )
 
 app = FastAPI()
@@ -62,7 +64,10 @@ async def proceed_zoho_callback(
     if error:
         return {"error": f"Zoho OAuth error: {error}"}
     
-    print(f"code: {code}\nlocation: {location}")
+    tokens_url = generate_zoho_tokens_url(code)
+    response = requests.get(url=tokens_url)
+
+    print(response.json())
 
     return {"status": "ok"}
 
