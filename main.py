@@ -30,6 +30,7 @@ async def adjust_eckwid_inventory_by_user_input(
     payload = await request.json()
 
     print(payload)
+    print(request.headers)
 
     return {"status": "ok"}
 
@@ -44,6 +45,7 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     payload = await request.json()
 
     print(payload)
+    print(request.headers)
 
     return {"status": "ok"}
 
