@@ -20,7 +20,7 @@ def generate_zoho_auth_uri(
 def generate_zoho_tokens_url(
     code: str,
 ) -> str:
-    base_url = "https://accounts.zoho.com/oauth/v2/token"
+    base_url = "https://accounts.zoho.eu/oauth/v2/token"
     params = {
         'code': code,
         'client_id': settings.zoho_settings.client_id,
