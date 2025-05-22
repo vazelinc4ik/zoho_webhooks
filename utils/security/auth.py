@@ -26,7 +26,7 @@ def generate_zoho_tokens_url(
         'client_id': settings.zoho_settings.client_id,
         'client_secret': settings.zoho_settings.client_secret,
         'redirect_uri': settings.zoho_settings.zoho_callback_uri,
-        'grant_type': 'code'
+        'grant_type': 'authorization_code'
     }
 
     return f"{base_url}?{urlencode(params)}"
