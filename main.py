@@ -65,8 +65,13 @@ async def proceed_zoho_callback(
         return {"error": f"Zoho OAuth error: {error}"}
     
     tokens_url = generate_zoho_tokens_url(code)
-    print(tokens_url)
-    response = requests.post(url=tokens_url)
+    
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
+
+    response = requests.post(url=tokens_url, headers=headers)
 
     print("Zoho response:", response.text)
 
