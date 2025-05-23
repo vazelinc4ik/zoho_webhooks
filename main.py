@@ -52,7 +52,7 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 
     return {"status": "ok"}
 
-@app.post("/eckid-webhooks/sales")
+@app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(
     request: Request
 ) -> dict:
