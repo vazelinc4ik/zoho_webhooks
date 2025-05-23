@@ -30,3 +30,17 @@ def generate_zoho_tokens_url(
     }
 
     return f"{base_url}?{urlencode(params)}"
+
+def generate_zoho_refresh_url(
+    refresh_token: str,
+) -> str:
+    base_url = "https://accounts.zoho.eu/oauth/v2/token"
+    params = {
+        'refresh_token': refresh_token,
+        'client_id': settings.zoho_settings.client_id,
+        'client_secret': settings.zoho_settings.client_secret,
+        'redirect_uri': settings.zoho_settings.zoho_callback_uri,
+        'grant_type': 'refresh_token'
+    }
+
+    return f"{base_url}?{urlencode(params)}"

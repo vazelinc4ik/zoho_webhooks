@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 from fastapi import (
     Depends, 
     FastAPI,
@@ -7,8 +8,10 @@ from fastapi import (
     Request
 )
 from fastapi.responses import RedirectResponse
+
 import requests
 
+from crud import ZohoTokensCRUD
 from utils.security import (
     ZohoSalesWebhookValidator,
     ZohoInventoryWebhookValidator,
@@ -49,13 +52,22 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 
     return {"status": "ok"}
 
-@app.post("/eckwid-webhooks/sales")
+@app.post("/eckid-webhooks/sales")
 async def create_zoho_inventory_sales_order(
     request: Request
 ) -> dict:
     data = await request.json()
     print(data)
     return {"status": "ok"}
+
+
+
+@app.get("/auth/zoho")
+async def auth_app_in_zoho(
+    scopes: Optional[List[str]] = Query(None)
+) -> RedirectResponse:
+    redirect_url = generate_zoho_auth_uri(scopes)
+    return RedirectResponse(url=redirect_url)
 
 @app.get("/auth/zoho/callback")
 async def proceed_zoho_callback(
@@ -68,20 +80,8 @@ async def proceed_zoho_callback(
     
     tokens_url = generate_zoho_tokens_url(code)
     
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json",
-    }
+    response = requests.post(url=tokens_url)
 
-    response = requests.post(url=tokens_url, headers=headers)
-
-    print("Zoho response:", response.text)
+    await ZohoTokensCRUD.find_and_patch
 
     return {"status": "ok"}
-
-@app.get("/auth/zoho")
-async def auth_app_in_zoho(
-    scopes: Optional[List[str]] = Query(None)
-) -> RedirectResponse:
-    redirect_url = generate_zoho_auth_uri(scopes)
-    return RedirectResponse(url=redirect_url)
