@@ -37,6 +37,7 @@ class BaseHandler(ABC):
 
     @staticmethod
     def _get_store_from_request(request: Request) -> Stores: 
+        print(request.headers.get("x-com-zoho-organizationid"))
         return request.headers.get("x-com-zoho-organizationid")
     
     @staticmethod
