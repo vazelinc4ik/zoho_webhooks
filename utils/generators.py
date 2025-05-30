@@ -49,14 +49,13 @@ async def get_zoho_api(
             raise HTTPException(status_code=404, detail="Store not found")
         
         tokens = await ZohoTokensCRUD().find_one_or_none(db, id=store.id)
-
         if tokens.expires_in - 60 < datetime.now().timestamp():
             url = generate_zoho_refresh_url(tokens.refresh_token)
             response = requests.post(url)
             payload =response.json()
             data = {
                 "access_token": payload.get('access_token'),
-                "expires_in": payload.get('expires_in')
+                "expires_in": datetime.now().timestamp() + payload.get('expires_in')
             }
             tokens = await ZohoTokensCRUD.patch_entity(db, tokens, **data)
     except Exception as e:

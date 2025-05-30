@@ -34,8 +34,8 @@ class BaseCRUD(Generic[M]):
             raise ValueError("Entity must have an ID to be updated")
         
         stmt = (
-            update(cls)
-            .where(cls.id == entity.id)
+            update(cls.model)
+            .where(cls.model.id == entity.id)
             .values(**data)
         )
         await db.execute(stmt)
