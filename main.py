@@ -84,7 +84,6 @@ async def create_zoho_inventory_sales_order(
     request: Request,
     db: AsyncSession = Depends(get_db),
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
-    
 ) -> dict:
     data = await request.json()
     zoho_api = await get_zoho_api(data, db)

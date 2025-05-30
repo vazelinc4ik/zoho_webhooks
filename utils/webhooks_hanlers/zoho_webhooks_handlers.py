@@ -21,8 +21,6 @@ from models import (
     Stores
 )
 
-from utils.generators import get_db
-
 
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
