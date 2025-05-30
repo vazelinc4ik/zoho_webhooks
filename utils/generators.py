@@ -6,7 +6,7 @@ from fastapi import HTTPException, Request
 from core.config import settings
 from crud import StoresCRUD
 
-async def get_ecwid_api(request: Request) -> AsyncGenerator[EcwidApi]:
+async def get_ecwid_api(request: Request) -> AsyncGenerator[EcwidApi, None]:
     zoho_organization_id = request.headers.get("x-com-zoho-organizationid")
     if not zoho_organization_id:
         raise HTTPException(status_code=400, detail="Missing organization ID header")
