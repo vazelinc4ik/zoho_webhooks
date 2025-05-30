@@ -36,7 +36,10 @@ async def adjust_eckwid_inventory_by_user_input(
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api)
+    try:
+        await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api)
+    except Exception as e:
+        print(e.with_traceback())
 
     return {"status": "ok"}
 
