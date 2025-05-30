@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import AsyncGenerator, Generator
+from typing import Any, AsyncGenerator, Dict, Generator
 
 from ecwid_api import EcwidApi
 from fastapi import Depends, HTTPException, Request
@@ -37,11 +37,10 @@ async def get_ecwid_api(
     return EcwidApi(settings.ecwid_settings.ecwid_store_id, settings.ecwid_settings.ecwid_app_secret)
 
 async def get_zoho_api(
-    request: Request,
-    db: AsyncSession = Depends(get_db)
+    data: Dict[str, Any],
+    db: AsyncSession
 ) -> ZohoApi:
     try:
-        data = await request.json()
         ecwid_store_id = data.get('storeId')
         store = await StoresCRUD.find_one_or_none(db, ecwid_store_id=ecwid_store_id)
 
