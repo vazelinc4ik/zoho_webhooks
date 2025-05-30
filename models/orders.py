@@ -17,6 +17,6 @@ class Orders(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     zoho_order_id: Mapped[str] = mapped_column(String, nullable=False)
-    ecwid_order_id: Mapped[str] = mapped_column(Integer, nullable=False)
+    ecwid_order_id: Mapped[str] = mapped_column(String, nullable=False)
     store_id: Mapped[int] = mapped_column(Integer, ForeignKey("stores.id"), nullable=False)
 
