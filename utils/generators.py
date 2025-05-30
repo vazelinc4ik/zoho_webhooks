@@ -20,7 +20,7 @@ async def get_ecwid_api(
     if not zoho_organization_id:
         raise HTTPException(status_code=400, detail="Missing organization ID header")
     try:
-        store = await StoresCRUD.find_one_or_none(zoho_organization_id=zoho_organization_id)
+        store = await StoresCRUD.find_one_or_none(db, zoho_organization_id=zoho_organization_id)
     except Exception as e:
         print(f'Failed to find store {e}')
     if not store:
