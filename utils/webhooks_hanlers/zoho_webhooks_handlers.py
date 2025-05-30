@@ -94,10 +94,13 @@ class BaseHandler(ABC):
                 db=db,
                 zoho_item_id=zoho_item_id
             )
-            print(db_item.id)
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
-            ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
+            print(quantity)
+            try:
+                ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
+            except Exception as e:
+                print(f"EcwidAPI error: {e}")
 
 
 
