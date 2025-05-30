@@ -82,11 +82,11 @@ async def handle_ecwid_webhook(
     zoho_api: ZohoApi
 ) -> None:
     if event_type == 'order.created':
-        handle_create_order_webhook(db, event_data, ecwid_api, zoho_api)
+        await handle_create_order_webhook(db, event_data, ecwid_api, zoho_api)
     elif event_type == 'order.updated':
-        handle_update_order_webhook(db, event_data, zoho_api)
+        await handle_update_order_webhook(db, event_data, zoho_api)
     elif event_type == 'order.deleted':
-        zoho_api.sales_orders_client.delete_sales_order()
+        await handle_delete_order_webhook(event_data, zoho_api)
     else:
         raise HTTPException(status_code=400, detail="Unknown event type")
 
