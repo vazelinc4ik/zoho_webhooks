@@ -14,7 +14,7 @@ from crud import ItemsCRUD, OrdersCRUD
 UNPAID_STATUS = 'AWAITING_PAYMENT'
 PAID_STATUS = 'PAID'
 REFUND_STATUS = 'REFUNDED'
-CUSTOMER_ID = 12143
+CUSTOMER_ID = 696616000002368581
 
 
 async def handle_create_order_webhook(
