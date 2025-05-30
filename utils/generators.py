@@ -1,9 +1,10 @@
+import httpx
+
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, Generator
 
 from ecwid_api import EcwidApi
 from fastapi import Depends, HTTPException, Request
-import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from zoho_api import ZohoApi
 
@@ -50,7 +51,8 @@ async def get_zoho_api(
         tokens = await ZohoTokensCRUD.find_one_or_none(db, id=store.id)
         if tokens.expires_in - 60 < datetime.now().timestamp():
             url = generate_zoho_refresh_url(tokens.refresh_token)
-            response = requests.post(url)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url)
             payload =response.json()
             data = {
                 "access_token": payload.get('access_token'),

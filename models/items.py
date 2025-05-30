@@ -15,7 +15,7 @@ from .base import Base
 class Items(Base):
     __tablename__ = "items"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
     zoho_item_id: Mapped[str] = mapped_column(String, nullable=False)
     ecwid_item_id: Mapped[int] = mapped_column(Integer, nullable=False)
     store_id: Mapped[int] = mapped_column(Integer, ForeignKey("stores.id"), nullable=False)
