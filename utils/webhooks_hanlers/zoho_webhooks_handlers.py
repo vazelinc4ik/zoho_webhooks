@@ -86,6 +86,8 @@ class BaseHandler(ABC):
         except Exception as e:
             print(f"Items data exc: {e}")
         
+        print(items_data)
+
         for item in items_data:
             zoho_item_id = str(item.get('item_id'))
 
