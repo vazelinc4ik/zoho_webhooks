@@ -10,10 +10,11 @@ from fastapi import (
 )
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from zoho_api import ZohoApi
 
 import requests
 
-from utils.generators import get_ecwid_api, get_db
+from utils.generators import get_ecwid_api, get_db, get_zoho_api
 from crud import ZohoTokensCRUD
 from utils.security import (
     ZohoSalesWebhookValidator,
@@ -80,18 +81,16 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 
 @app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(
-    request: Request
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    ecwid_api: EcwidApi = Depends(get_ecwid_api),
+    zoho_api: ZohoApi = Depends(get_zoho_api)
 ) -> dict:
     data = await request.json()
-    print(data)
-    if data.get('eventType') == 'order.created':
-        pass
-    elif data.get('eventType') == 'order.updated':
-        pass
-    elif data.get('eventType') == 'order.deleted':
-        pass
-    else:
-        raise HTTPException(status_code=400, detail="Unknown event type")
+    event_type = data.get('eventType')
+    event_data = data.get('data')
+
+    await handle_ecwid_webhook(db, event_type, event_data, ecwid_api, zoho_api)
     
     return {"status": "ok"}
 

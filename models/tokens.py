@@ -1,5 +1,6 @@
 
 from sqlalchemy import (
+    BigInteger,
     ForeignKey,
     Integer,
     String, 
@@ -18,3 +19,4 @@ class ZohoTokens(Base):
     store_id: Mapped[int] = mapped_column(Integer, ForeignKey("stores.id"), nullable=False, unique=True)
     access_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     refresh_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    expires_in: Mapped[int] = mapped_column(BigInteger, nullable=False)

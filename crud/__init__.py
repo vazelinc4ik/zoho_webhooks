@@ -1,1 +1,1 @@
-from .base import ItemsCRUD, StoresCRUD, ZohoTokensCRUD
+from .base import ItemsCRUD, StoresCRUD, ZohoTokensCRUD, OrdersCRUD

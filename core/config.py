@@ -23,6 +23,7 @@ class DatabaseSettings(Base):
 
 class EcwidSettings(Base):
     ecwid_app_secret: str
+    ecwid_store_id: int
 
 class Settings:
     zoho_settings = ZohoSettings()

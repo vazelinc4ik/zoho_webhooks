@@ -9,6 +9,7 @@ from core import async_session_maker
 
 from models import (
     Items,
+    Orders,
     Stores,
     ZohoTokens
 )
@@ -47,7 +48,7 @@ class BaseCRUD(Generic[M]):
         if not data:
             raise ValueError("No data provided for update")
             
-        entity = cls(**data)
+        entity = cls.model(**data)
         db.add(entity)
         await db.commit()
         await db.refresh(entity)
@@ -61,6 +62,9 @@ class ItemsCRUD(BaseCRUD[Items]):
 class StoresCRUD(BaseCRUD[Stores]):
     model = Stores
 
+class OrdersCRUD(BaseCRUD[Orders]):
+    model = Orders
+
 class ZohoTokensCRUD(BaseCRUD[ZohoTokens]):
     model = ZohoTokens
 
@@ -71,12 +75,14 @@ class ZohoTokensCRUD(BaseCRUD[ZohoTokens]):
         zoho_organization_id: int,
         access_token: str,
         refresh_token: str,
+        expires
     ) -> None:
         old_entity = await cls.find_one_or_none(db, zoho_organization_id=zoho_organization_id)
 
         if old_entity:
             await cls.patch_entity(db, old_entity, access_token=access_token, refresh_token=refresh_token)
             return
+        
         await cls.create_entity(db, access_token=access_token, refresh_token=refresh_token)
 
 
