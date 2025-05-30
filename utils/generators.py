@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, Generator
 
@@ -14,14 +13,8 @@ from crud import StoresCRUD, ZohoTokensCRUD
 from .security.auth import generate_zoho_refresh_url
 
 
-
-@asynccontextmanager
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
-        try:
-            await session.execute("SELECT 1")  # pre-ping
-        except Exception:
-            raise HTTPException(status_code=500, detail="Database connection error")
         yield session
 
 # async def get_ecwid_api(
