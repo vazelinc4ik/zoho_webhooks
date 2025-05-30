@@ -16,7 +16,7 @@ from .security.auth import generate_zoho_refresh_url
 
 
 @asynccontextmanager
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         try:
             await session.execute("SELECT 1")  # pre-ping
