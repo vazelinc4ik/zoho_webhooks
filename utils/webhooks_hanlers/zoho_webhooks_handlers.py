@@ -76,18 +76,9 @@ class BaseHandler(ABC):
         db: AsyncSession
     ) -> Dict[str, dict]:
         zoho_organization_id = cls._get_store_from_request(request)
-        try: 
-            store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
-        except Exception as e:
-            print(f"Store exc: {e}")
 
-        try:
-            items_data = await cls._get_items_data_from_request(request)
-        except Exception as e:
-            print(f"Items data exc: {e}")
-        
-        print(items_data)
-
+        store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
+        items_data = await cls._get_items_data_from_request(request)
         for item in items_data:
             zoho_item_id = str(item.get('item_id'))
 
@@ -97,12 +88,10 @@ class BaseHandler(ABC):
                 zoho_item_id=zoho_item_id
             )
             ecwid_item_id = db_item.ecwid_item_id
-            print(item)
             quantity = cls._get_quantity_change_from_item(item)
-            try:
-                ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
-            except Exception as e:
-                print(f"EcwidAPI error: {e}")
+
+            ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
+
 
 
 
@@ -114,6 +103,11 @@ class InventoryAdjustmentHandler(BaseHandler):
         if data.get('adjustment_type', "") != "quantity":
             raise HTTPException(status_code=400, detail="Unsupported adjustment_type")
         return data.get('line_items', [])
+    
+    @staticmethod
+    def _get_quantity_change_from_item(
+        item: Dict[str, Any]
+    ) -> int: return item.get('quantity_adjusted')
 
     
 class SalesOrdersHandler(BaseHandler):

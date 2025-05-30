@@ -37,7 +37,10 @@ async def adjust_eckwid_inventory_by_user_input(
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    try:
+        await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    except Exception as e:
+        print(f"Unknown exc: {e}")
 
 
     return {"status": "ok"}
@@ -52,7 +55,10 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    try:
+        await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    except Exception as e:
+        print(f"Unknown exc: {e}")
 
     return {"status": "ok"}
 
@@ -66,7 +72,10 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    try:
+        await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    except Exception as e:
+        print(f"Unknown exc: {e}")
 
     return {"status": "ok"}
 
