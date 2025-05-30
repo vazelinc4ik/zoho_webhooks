@@ -30,12 +30,8 @@ app = FastAPI()
 async def adjust_eckwid_inventory_by_user_input(
     request: Request,
     is_signature_valid: bool = Depends(ZohoInventoryWebhookValidator.validate_request),
-    # ecwid_api: EcwidApi = Depends(get_ecwid_api)
+    ecwid_api: EcwidApi = Depends(get_ecwid_api)
 ) -> dict:
-    try:
-        ecwid_api = get_ecwid_api(request)
-    except Exception as e:
-        print(e)
 
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")

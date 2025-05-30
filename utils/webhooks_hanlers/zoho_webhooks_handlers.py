@@ -9,6 +9,7 @@ from fastapi import (
     Request
 )
 from ecwid_api import EcwidApi
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud import (
     ItemsCRUD,
@@ -20,9 +21,10 @@ from models import (
     Stores
 )
 
+from utils.generators import get_db
+
+
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
-
-
 
 class BaseHandler(ABC):
 
@@ -40,8 +42,11 @@ class BaseHandler(ABC):
         return request.headers.get("x-com-zoho-organizationid")
     
     @staticmethod
-    async def _find_store_entity_in_database(**data: Any) -> Stores:
-        store = await StoresCRUD.find_one_or_none(**data)
+    async def _find_store_entity_in_database(
+        db: AsyncSession = Depends(get_db),
+        **data: Any
+    ) -> Stores:
+        store = await StoresCRUD.find_one_or_none(db, **data)
         if not store:
             raise HTTPException(status_code=404, detail="Store not found")
         
@@ -51,12 +56,13 @@ class BaseHandler(ABC):
     async def _find_item_entity_in_database(
         cls,
         store: Stores,
+        db: AsyncSession = Depends(get_db),
         **kwargs: Any
     ) -> Items:
         data = {"store_id": store.id}
         data.update(kwargs)
 
-        item = await ItemsCRUD.find_one_or_none(**data)
+        item = await ItemsCRUD.find_one_or_none(db, **data)
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         

@@ -2,8 +2,10 @@ from typing import AsyncGenerator, Generator
 
 from ecwid_api import EcwidApi
 from fastapi import HTTPException, Request
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
+from core import async_session_maker
 from crud import StoresCRUD
 
 async def get_ecwid_api(request: Request) -> AsyncGenerator[EcwidApi, None]:
@@ -14,3 +16,8 @@ async def get_ecwid_api(request: Request) -> AsyncGenerator[EcwidApi, None]:
     if not store:
         raise HTTPException(status_code=404, detail="Store not found")
     yield EcwidApi(store.ecwid_store_id, settings.ecwid_settings.ecwid_app_secret)
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session

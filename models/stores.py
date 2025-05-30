@@ -18,7 +18,7 @@ class Stores(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, unique=True)
 
     #Отдается зохо в хэдерах
-    zoho_organization_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
+    zoho_organization_id: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
     #Отдается эквидом при вебхуках
     ecwid_store_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)

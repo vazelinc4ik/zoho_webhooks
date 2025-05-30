@@ -3,6 +3,7 @@
 from typing import Generic, TypeVar, Type, ClassVar, Any
 
 from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import async_session_maker
 
@@ -18,11 +19,10 @@ class BaseCRUD(Generic[M]):
     model: ClassVar[Type[M]]
 
     @classmethod
-    async def find_one_or_none(cls, **data: Any) -> M:
-        async with async_session_maker() as session:
-            stmt = select(cls.model).filter_by(**data)
-            result = await session.execute(stmt)
-            return result.scalars().one_or_none()
+    async def find_one_or_none(db: AsyncSession, cls, **data: Any) -> M:
+        stmt = select(cls.model).filter_by(**data)
+        result = await db.execute(stmt)
+        return result.scalars().one_or_none()
         
     @classmethod
     async def patch_entity(cls, entity: M, **data: Any) -> M:
