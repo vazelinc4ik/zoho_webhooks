@@ -43,7 +43,7 @@ class BaseHandler(ABC):
     
     @staticmethod
     async def _find_store_entity_in_database(
-        db: AsyncSession = Depends(get_db),
+        db: AsyncSession,
         **data: Any
     ) -> Stores:
         store = await StoresCRUD.find_one_or_none(db, **data)
@@ -56,7 +56,7 @@ class BaseHandler(ABC):
     async def _find_item_entity_in_database(
         cls,
         store: Stores,
-        db: AsyncSession = Depends(get_db),
+        db: AsyncSession,
         **kwargs: Any
     ) -> Items:
         data = {"store_id": store.id}
@@ -72,11 +72,12 @@ class BaseHandler(ABC):
     async def update_ecwid_stock_from_webhook(
         cls,
         request: Request,
-        ecwid_api: EcwidApi
+        ecwid_api: EcwidApi,
+        db: AsyncSession
     ) -> Dict[str, dict]:
         zoho_organization_id = cls._get_store_from_request(request)
         try: 
-            store = await cls._find_store_entity_in_database(zoho_organization_id=zoho_organization_id)
+            store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         except Exception as e:
             print(f"Store exc: {e}")
 
@@ -87,10 +88,10 @@ class BaseHandler(ABC):
         
         for item in items_data:
             zoho_item_id = str(item.get('item_id'))
-            print(zoho_item_id)
 
             db_item = await cls._find_item_entity_in_database(
                 store=store,
+                db=db,
                 zoho_item_id=zoho_item_id
             )
             print(db_item.id)

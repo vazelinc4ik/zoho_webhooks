@@ -9,10 +9,11 @@ from fastapi import (
     Request
 )
 from fastapi.responses import RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import requests
 
-from utils.generators import get_ecwid_api
+from utils.generators import get_ecwid_api, get_db
 from crud import ZohoTokensCRUD
 from utils.security import (
     ZohoSalesWebhookValidator,
@@ -30,12 +31,13 @@ app = FastAPI()
 async def adjust_eckwid_inventory_by_user_input(
     request: Request,
     is_signature_valid: bool = Depends(ZohoInventoryWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api)
+    ecwid_api: EcwidApi = Depends(get_ecwid_api),
+    db: AsyncSession = Depends(get_db)
 ) -> dict:
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api)
+    await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
 
 
     return {"status": "ok"}
@@ -44,12 +46,13 @@ async def adjust_eckwid_inventory_by_user_input(
 async def adjust_eckwid_inventory_by_fbm_sale(
     request: Request,
     is_signature_valid: bool = Depends(ZohoSalesWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api)
+    ecwid_api: EcwidApi = Depends(get_ecwid_api),
+    db: AsyncSession = Depends(get_db)
 ) -> dict:
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api)
+    await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
 
     return {"status": "ok"}
 
@@ -57,12 +60,13 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 async def adjust_eckwid_inventory_by_fbm_sale(
     request: Request,
     is_signature_valid: bool = Depends(ZohoPurchaseWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api)
+    ecwid_api: EcwidApi = Depends(get_ecwid_api),
+    db: AsyncSession = Depends(get_db)
 ) -> dict:
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api)
+    await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
 
     return {"status": "ok"}
 
