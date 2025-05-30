@@ -87,7 +87,7 @@ async def create_zoho_inventory_sales_order(
     
 ) -> dict:
     data = await request.json()
-    zoho_api = get_zoho_api(data, db)
+    zoho_api = await get_zoho_api(data, db)
     event_type = data.get('eventType')
     event_data = data.get('data')
 
