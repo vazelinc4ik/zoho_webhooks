@@ -73,7 +73,7 @@ class BaseHandler(ABC):
         items_data = await cls._get_items_data_from_request(request)
         
         for item in items_data:
-            zoho_item_id = item.get('item_id')
+            zoho_item_id = str(item.get('item_id'))
             db_item = await cls._find_item_entity_in_database(
                 store=store,
                 zoho_item_id=zoho_item_id
