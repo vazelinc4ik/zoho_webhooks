@@ -25,39 +25,34 @@ class BaseCRUD(Generic[M]):
         return result.scalars().one_or_none()
         
     @classmethod
-    async def patch_entity(cls, entity: M, **data: Any) -> M:
-        async with async_session_maker() as session:
-            if not data:
-                raise ValueError("No data provided for update")
-            
-            if not hasattr(entity, "id") or entity.id is None:
-                raise ValueError("Entity must have an ID to be updated")
-            
-            stmt = (
-                update(cls)
-                .where(cls.id == entity.id)
-                .values(**data)
-            )
-
-            await session.execute(stmt)
-            await session.commit()
-
-            await session.refresh(entity)
-
-            return entity
+    async def patch_entity(cls, db: AsyncSession, entity: M, **data: Any) -> M:
+        if not data:
+            raise ValueError("No data provided for update")
+        
+        if not hasattr(entity, "id") or entity.id is None:
+            raise ValueError("Entity must have an ID to be updated")
+        
+        stmt = (
+            update(cls)
+            .where(cls.id == entity.id)
+            .values(**data)
+        )
+        await db.execute(stmt)
+        await db.commit()
+        await db.refresh(entity)
+        return entity
 
     @classmethod
-    async def create_entity(cls, **data: Any) -> M:
-        async with async_session_maker() as session:
-            if not data:
-                raise ValueError("No data provided for update")
+    async def create_entity(cls, db: AsyncSession, **data: Any) -> M:
+        if not data:
+            raise ValueError("No data provided for update")
             
-            entity = cls(**data)
-            session.add(entity)
-            await session.commit()
-            await session.refresh(entity)
+        entity = cls(**data)
+        db.add(entity)
+        await db.commit()
+        await db.refresh(entity)
 
-            return entity
+        return entity
     
         
 class ItemsCRUD(BaseCRUD[Items]):
@@ -72,15 +67,17 @@ class ZohoTokensCRUD(BaseCRUD[ZohoTokens]):
     @classmethod
     async def find_and_patch(
         cls,
+        db: AsyncSession,
         zoho_organization_id: int,
         access_token: str,
         refresh_token: str,
     ) -> None:
-        old_entity = await cls.find_one_or_none(zoho_organization_id=zoho_organization_id)
+        old_entity = await cls.find_one_or_none(db, zoho_organization_id=zoho_organization_id)
+
         if old_entity:
-            await cls.patch_entity(old_entity, access_token=access_token, refresh_token=refresh_token)
+            await cls.patch_entity(db, old_entity, access_token=access_token, refresh_token=refresh_token)
             return
-        await cls.create_entity(access_token=access_token, refresh_token=refresh_token)
+        await cls.create_entity(db, access_token=access_token, refresh_token=refresh_token)
 
 
 

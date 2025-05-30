@@ -16,15 +16,13 @@ async def get_ecwid_api(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ) -> EcwidApi:
-    try:
-        zoho_organization_id = request.headers.get("x-com-zoho-organizationid")
-        if not zoho_organization_id:
-            raise HTTPException(status_code=400, detail="Missing organization ID header")
 
-        store = await StoresCRUD.find_one_or_none(db, zoho_organization_id=zoho_organization_id)
+    zoho_organization_id = request.headers.get("x-com-zoho-organizationid")
+    if not zoho_organization_id:
+        raise HTTPException(status_code=400, detail="Missing organization ID header")
+    
+    store = await StoresCRUD.find_one_or_none(db, zoho_organization_id=zoho_organization_id)
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
 
-        if not store:
-            raise HTTPException(status_code=404, detail="Store not found")
-    except Exception as e:
-        print(e)
     return EcwidApi(store.ecwid_store_id, settings.ecwid_settings.ecwid_app_secret)

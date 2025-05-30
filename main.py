@@ -72,10 +72,7 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     if not is_signature_valid:
         raise HTTPException(status_code=403, detail="Invalid signature")
     
-    try:
-        await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-    except Exception as e:
-        print(f"Unknown exc: {e}")
+    await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
 
     return {"status": "ok"}
 
@@ -87,6 +84,15 @@ async def create_zoho_inventory_sales_order(
 ) -> dict:
     data = await request.json()
     print(data)
+    if data.get('eventType') == 'order.created':
+        pass
+    elif data.get('eventType') == 'order.updated':
+        pass
+    elif data.get('eventType') == 'order.deleted':
+        pass
+    else:
+        raise HTTPException(status_code=400, detail="Unknown event type")
+    
     return {"status": "ok"}
 
 
@@ -100,9 +106,11 @@ async def auth_app_in_zoho(
 
 @app.get("/auth/zoho/callback")
 async def proceed_zoho_callback(
+    request: Request,
     code: Optional[str] = Query(None),
     location: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db)
 ) -> dict:
     if error:
         return {"error": f"Zoho OAuth error: {error}"}
@@ -111,6 +119,8 @@ async def proceed_zoho_callback(
     
     response = requests.post(url=tokens_url)
 
-    await ZohoTokensCRUD.find_and_patch
+    print(request.headers)
+    print(response.json())
+    # await ZohoTokensCRUD.find_and_patch(db, )
 
     return {"status": "ok"}
