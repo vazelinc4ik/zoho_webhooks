@@ -37,7 +37,6 @@ class BaseHandler(ABC):
 
     @staticmethod
     def _get_store_from_request(request: Request) -> Stores: 
-        print(request.headers.get("x-com-zoho-organizationid"))
         return request.headers.get("x-com-zoho-organizationid")
     
     @staticmethod
@@ -70,15 +69,25 @@ class BaseHandler(ABC):
         ecwid_api: EcwidApi
     ) -> Dict[str, dict]:
         zoho_organization_id = cls._get_store_from_request(request)
-        store = await cls._find_store_entity_in_database(zoho_organization_id=zoho_organization_id)
-        items_data = await cls._get_items_data_from_request(request)
+        try: 
+            store = await cls._find_store_entity_in_database(zoho_organization_id=zoho_organization_id)
+        except Exception as e:
+            print(f"Store exc: {e}")
+
+        try:
+            items_data = await cls._get_items_data_from_request(request)
+        except Exception as e:
+            print(f"Items data exc: {e}")
         
         for item in items_data:
             zoho_item_id = str(item.get('item_id'))
+            print(zoho_item_id)
+
             db_item = await cls._find_item_entity_in_database(
                 store=store,
                 zoho_item_id=zoho_item_id
             )
+            print(db_item.id)
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
             ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
