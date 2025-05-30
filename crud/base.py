@@ -19,7 +19,7 @@ class BaseCRUD(Generic[M]):
     model: ClassVar[Type[M]]
 
     @classmethod
-    async def find_one_or_none(db: AsyncSession, cls, **data: Any) -> M:
+    async def find_one_or_none(cls, db: AsyncSession, **data: Any) -> M:
         stmt = select(cls.model).filter_by(**data)
         result = await db.execute(stmt)
         return result.scalars().one_or_none()
