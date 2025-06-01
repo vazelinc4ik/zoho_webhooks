@@ -93,7 +93,6 @@ async def create_zoho_inventory_sales_order(
     zoho_api = await get_zoho_api(data, db)
     event_type = data.get('eventType')
     event_data = data.get('data')
-
     try:
         await handle_ecwid_webhook(db, event_type, event_data, ecwid_api, zoho_api)
     except Exception as e:
