@@ -53,13 +53,15 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
+    # if not is_signature_valid:
+    #     raise HTTPException(status_code=403, detail="Invalid signature")
     
-    try:
-        await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-    except Exception as e:
-        print(f"Unknown exc: {e}")
+    # try:
+    #     await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    # except Exception as e:
+    #     print(f"Unknown exc: {e}")
+    data = await request.json()
+    print(data)
 
     return {"status": "ok"}
 
@@ -70,10 +72,14 @@ async def adjust_eckwid_inventory_by_fbm_sale(
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
+    # if not is_signature_valid:
+    #     raise HTTPException(status_code=403, detail="Invalid signature")
     
-    await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    # await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+
+    data = await request.json()
+    print(data)
+    
 
     return {"status": "ok"}
 
