@@ -9,6 +9,7 @@ class ZohoSettings(Base):
     zoho_inventory_adjustment_secret: str
     zoho_fbm_sales_secret: str
     zoho_callback_uri: str
+    zoho_warehouse_id: int
 
 class DatabaseSettings(Base):
     DB_HOST: str

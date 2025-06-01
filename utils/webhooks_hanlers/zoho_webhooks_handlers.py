@@ -4,13 +4,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 from fastapi import (
-    Depends, 
     HTTPException, 
     Request
 )
 from ecwid_api import EcwidApi
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core import settings
 from crud import (
     ItemsCRUD,
     StoresCRUD
@@ -21,6 +21,7 @@ from models import (
     Stores
 )
 
+TARGET_WH_ID = settings.zoho_settings.zoho_warehouse_id
 
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
@@ -78,6 +79,9 @@ class BaseHandler(ABC):
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
         for item in items_data:
+            if item.get('warehouse_id') != TARGET_WH_ID:
+                continue
+            
             zoho_item_id = str(item.get('item_id'))
 
             db_item = await cls._find_item_entity_in_database(
@@ -88,7 +92,7 @@ class BaseHandler(ABC):
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
 
-            ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
+            await ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
 
 
 
@@ -98,8 +102,13 @@ class InventoryAdjustmentHandler(BaseHandler):
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('inventory_adjustment', {})
+
         if data.get('adjustment_type', "") != "quantity":
-            raise HTTPException(status_code=400, detail="Unsupported adjustment_type")
+            raise HTTPException(status_code=400, detail="Unsupported adjustment type")
+        
+        if data.get('warehouse_id', "") != TARGET_WH_ID:
+            raise HTTPException(status_code=400, detail="Unsupported warehouse")
+
         return data.get('line_items', [])
     
     @staticmethod
@@ -113,11 +122,7 @@ class SalesOrdersHandler(BaseHandler):
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('salesorder', {})
-        if data.get('source', "") != "FBM_marker":
-            raise HTTPException(status_code=400, detail="Unsupported source")  
-        print(data)
-        return []
-        # return data.get('line_items', [])
+        return data.get('line_items', [])
 
 
 class PurchaseOrdersHandfler(BaseHandler):

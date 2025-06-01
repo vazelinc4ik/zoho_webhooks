@@ -41,25 +41,22 @@ async def get_zoho_api(
     data: Dict[str, Any],
     db: AsyncSession
 ) -> ZohoApi:
-    try:
-        ecwid_store_id = data.get('storeId')
-        store = await StoresCRUD.find_one_or_none(db, ecwid_store_id=ecwid_store_id)
+    ecwid_store_id = data.get('storeId')
+    store = await StoresCRUD.find_one_or_none(db, ecwid_store_id=ecwid_store_id)
 
-        if not store:
-            raise HTTPException(status_code=404, detail="Store not found")
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
         
-        tokens = await ZohoTokensCRUD.find_one_or_none(db, id=store.id)
-        if tokens.expires_in - 60 < datetime.now().timestamp():
-            url = generate_zoho_refresh_url(tokens.refresh_token)
-            async with httpx.AsyncClient() as client:
-                response = await client.post(url)
-            payload =response.json()
-            data = {
-                "access_token": payload.get('access_token'),
-                "expires_in": datetime.now().timestamp() + payload.get('expires_in')
-            }
-            tokens = await ZohoTokensCRUD.patch_entity(db, tokens, **data)
-    except Exception as e:
-        print(e)
+    tokens = await ZohoTokensCRUD.find_one_or_none(db, id=store.id)
+    if tokens.expires_in - 60 < datetime.now().timestamp():
+        url = generate_zoho_refresh_url(tokens.refresh_token)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url)
+        payload = response.json()
+        data = {
+            "access_token": payload.get('access_token'),
+            "expires_in": datetime.now().timestamp() + payload.get('expires_in')
+        }
+        tokens = await ZohoTokensCRUD.patch_entity(db, tokens, **data)
     
     return ZohoApi(tokens.access_token, store.location)

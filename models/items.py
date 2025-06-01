@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    BigInteger,
     ForeignKey, 
     Integer, 
     String, 

@@ -1,6 +1,3 @@
-
-
-
 from abc import ABC
 from typing import Any, Dict
 
@@ -25,7 +22,7 @@ async def handle_create_order_webhook(
 ) -> None:
     payment_status = event_data.get('newPaymentStatus')
     order_id = event_data.get('orderId')
-    order_data = ecwid_api.orders_client.get_order(order_id)
+    order_data = await ecwid_api.orders_client.get_order(order_id)
     zoho_payload = {
         'customer_id': CUSTOMER_ID,
         'line_items': []
@@ -33,13 +30,13 @@ async def handle_create_order_webhook(
 
     for item in order_data.get('items', []):
         db_item = await ItemsCRUD.find_one_or_none(db, ecwid_item_id=item.get('productId'))
-        zoho_payload.get('line_items', []).append({
+        zoho_payload['line_items'].append({
             'item_id': db_item.zoho_item_id,
             'rate': item.get('price'),
             'quantity': item.get('quantity')
         })
 
-    response = zoho_api.sales_orders_client.create_sales_order(**zoho_payload)
+    response = await zoho_api.sales_orders_client.create_sales_order(**zoho_payload)
     zoho_order_id = str(response.get("salesorder", {}).get('salesorder_id'))
     await OrdersCRUD.create_entity(
         db, 
@@ -49,7 +46,7 @@ async def handle_create_order_webhook(
     )
 
     if payment_status == PAID_STATUS:
-        zoho_api.sales_orders_client.confirm_sales_order(zoho_order_id)
+        await zoho_api.sales_orders_client.confirm_sales_order(zoho_order_id)
 
 async def handle_update_order_webhook(
     db: AsyncSession,
@@ -62,9 +59,9 @@ async def handle_update_order_webhook(
     new_payment_status = event_data.get("newPaymentStatus")
 
     if old_payment_status == UNPAID_STATUS and new_payment_status == PAID_STATUS:
-        zoho_api.sales_orders_client.confirm_sales_order(order.zoho_order_id)
+        await zoho_api.sales_orders_client.confirm_sales_order(order.zoho_order_id)
     elif old_payment_status != REFUND_STATUS and new_payment_status == REFUND_STATUS:
-        zoho_api.sales_orders_client.delete_sales_order(order.zoho_order_id)
+        await zoho_api.sales_orders_client.delete_sales_order(order.zoho_order_id)
 
 
 async def handle_delete_order_webhook(
@@ -72,7 +69,7 @@ async def handle_delete_order_webhook(
     zoho_api: ZohoApi
 ) -> None:
     order_id = event_data.get('orderId')
-    zoho_api.sales_orders_client.delete_sales_order(order_id)
+    await zoho_api.sales_orders_client.delete_sales_order(order_id)
 
 async def handle_ecwid_webhook(
     db: AsyncSession,
