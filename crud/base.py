@@ -2,7 +2,7 @@
 
 from typing import Generic, TypeVar, Type, ClassVar, Any
 
-from sqlalchemy import select, update
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import async_session_maker
@@ -46,12 +46,12 @@ class BaseCRUD(Generic[M]):
     @classmethod
     async def create_entity(cls, db: AsyncSession, **data: Any) -> M:
         if not data:
-            raise ValueError("No data provided for update")
+            raise ValueError("No data provided for create")
             
-        entity = cls.model(**data)
-        db.add(entity)
+        query = insert(cls.model).values(**data).returning(cls.model)
+        result = await db.execute(query)
+        entity = result.scalar_one()
         await db.commit()
-        await db.refresh(entity)
 
         return entity
     
