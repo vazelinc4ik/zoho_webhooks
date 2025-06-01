@@ -35,15 +35,15 @@ async def adjust_eckwid_inventory_by_user_input(
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
+    # if not is_signature_valid:
+    #     raise HTTPException(status_code=403, detail="Invalid signature")
     
-    try:
-        await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-    except Exception as e:
-        print(f"Unknown exc: {e}")
-
-
+    # try:
+    #     await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+    # except Exception as e:
+    #     print(f"Unknown exc: {e}")
+    data = await request.json()
+    print(data)
     return {"status": "ok"}
 
 @app.post("/zoho-webhooks/sales")
