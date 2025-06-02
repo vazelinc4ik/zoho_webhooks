@@ -66,11 +66,15 @@ async def handle_update_order_webhook(
 
 
 async def handle_delete_order_webhook(
+    db: AsyncSession,
     event_data: Dict[str, str],
     zoho_api: ZohoApi
 ) -> None:
     order_id = event_data.get('orderId')
-    await zoho_api.sales_orders_client.delete_sales_order(order_id)
+    order = await OrdersCRUD.find_one_or_none(db, ecwid_order_id=order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order with ecwid_id {order_id} not found")
+    await zoho_api.sales_orders_client.delete_sales_order(order.zoho_order_id)
 
 async def handle_ecwid_webhook(
     db: AsyncSession,
@@ -84,7 +88,7 @@ async def handle_ecwid_webhook(
     elif event_type == 'order.updated':
         await handle_update_order_webhook(db, event_data, zoho_api)
     elif event_type == 'order.deleted':
-        await handle_delete_order_webhook(event_data, zoho_api)
+        await handle_delete_order_webhook(db, event_data, zoho_api)
     else:
         raise HTTPException(status_code=400, detail="Unknown event type")
 
