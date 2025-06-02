@@ -51,7 +51,7 @@ async def get_zoho_api(
         if not store:
             raise HTTPException(status_code=404, detail="Store not found")
             
-        tokens = await ZohoTokensCRUD.find_one_or_none(db, id=store.id)
+        tokens = await ZohoTokensCRUD.find_one_or_none(db, store_id=store.id)
         if tokens.expires_in - 60 < datetime.now().timestamp():
             url = generate_zoho_refresh_url(tokens.refresh_token)
             async with httpx.AsyncClient() as client:
