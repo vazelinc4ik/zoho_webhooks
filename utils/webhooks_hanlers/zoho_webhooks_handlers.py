@@ -31,10 +31,6 @@ class BaseHandler(ABC):
     @abstractmethod 
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]: ...
 
-    @staticmethod
-    def _get_quantity_change_from_item(
-        item: Dict[str, Any]
-    ) -> int: return item.get('quantity')
 
     @staticmethod
     def _get_store_from_request(request: Request) -> Stores: 
@@ -123,6 +119,11 @@ class SalesOrdersHandler(BaseHandler):
         payload = await request.json()
         data = payload.get('salesorder', {})
         return data.get('line_items', [])
+    
+    @staticmethod
+    def _get_quantity_change_from_item(
+        item: Dict[str, Any]
+    ) -> int: return -item.get('quantity')
 
 
 class PurchaseOrdersHandfler(BaseHandler):
@@ -131,6 +132,11 @@ class PurchaseOrdersHandfler(BaseHandler):
         payload = await request.json()
         data = payload.get('purchaseorder', {})
         return data.get('line_items', [])
+    
+    @staticmethod
+    def _get_quantity_change_from_item(
+        item: Dict[str, Any]
+    ) -> int: return item.get('quantity')
 
 
 
