@@ -101,9 +101,6 @@ class InventoryAdjustmentHandler(BaseHandler):
 
         if data.get('adjustment_type', "") != "quantity":
             raise HTTPException(status_code=400, detail="Unsupported adjustment type")
-        
-        if data.get('warehouse_id', "") != TARGET_WH_ID:
-            raise HTTPException(status_code=400, detail="Unsupported warehouse")
 
         return data.get('line_items', [])
     
