@@ -97,6 +97,7 @@ class InventoryAdjustmentHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
+        print(payload)
         data = payload.get('inventory_adjustment', {})
 
         if data.get('adjustment_type', "") != "quantity":
