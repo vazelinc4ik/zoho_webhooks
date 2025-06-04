@@ -174,3 +174,9 @@ cython_debug/
 
 test.py
 /.vscode
+
+/ecwid_items.json
+/matched_items.json
+/response.json
+/unmatched_items.json
+/zoho_items.json

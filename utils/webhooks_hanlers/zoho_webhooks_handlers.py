@@ -22,6 +22,7 @@ from models import (
 )
 
 TARGET_WH_ID = settings.zoho_settings.zoho_warehouse_id
+ECWID_CUSTOMER_ID = settings.zoho_settings.ecwid_customer_id
 
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
@@ -115,6 +116,8 @@ class SalesOrdersHandler(BaseHandler):
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('salesorder', {})
+        if data.get('customer_id', '') ==  ECWID_CUSTOMER_ID:
+            raise HTTPException(status_code=400, detail="Unsupported customer")
         return data.get('line_items', [])
     
     @staticmethod

@@ -11,6 +11,7 @@ class ZohoSettings(Base):
     zoho_purchase_secret: str
     zoho_callback_uri: str
     zoho_warehouse_id: str
+    ecwid_customer_id: str
 
 class DatabaseSettings(Base):
     DB_HOST: str
