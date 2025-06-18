@@ -32,6 +32,12 @@ class BaseHandler(ABC):
     @abstractmethod 
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]: ...
 
+    @staticmethod
+    @abstractmethod
+    def _get_quantity_change_from_item(
+        item: Dict[str, Any]
+    ) -> int: ...
+
 
     @staticmethod
     def _get_store_from_request(request: Request) -> Stores: 

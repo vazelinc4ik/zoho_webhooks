@@ -77,9 +77,6 @@ async def adjust_eckwid_inventory_by_fbm_sale(
         return {"status": "no action taken", "message": exc.detail}
 
     
-
-
-
 @app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(
     request: Request,
@@ -95,32 +92,4 @@ async def create_zoho_inventory_sales_order(
     except Exception as e:
         print(e)
     
-    return {"status": "ok"}
-
-@app.get("/auth/zoho")
-async def auth_app_in_zoho(
-    scopes: Optional[List[str]] = Query(None)
-) -> RedirectResponse:
-    redirect_url = generate_zoho_auth_uri(scopes)
-    return RedirectResponse(url=redirect_url)
-
-@app.get("/auth/zoho/callback")
-async def proceed_zoho_callback(
-    request: Request,
-    code: Optional[str] = Query(None),
-    location: Optional[str] = Query(None),
-    error: Optional[str] = Query(None),
-    db: AsyncSession = Depends(get_db)
-) -> dict:
-    if error:
-        return {"error": f"Zoho OAuth error: {error}"}
-    
-    tokens_url = generate_zoho_tokens_url(code)
-    
-    response = requests.post(url=tokens_url)
-
-    print(request.headers)
-    print(response.json())
-    # await ZohoTokensCRUD.find_and_patch(db, )
-
     return {"status": "ok"}

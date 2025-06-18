@@ -11,8 +11,32 @@ from crud import ItemsCRUD, OrdersCRUD
 UNPAID_STATUS = 'AWAITING_PAYMENT'
 PAID_STATUS = 'PAID'
 REFUND_STATUS = 'REFUNDED'
-CUSTOMER_ID = 696616000002368581
 
+def prepare_ecwid_data_for_zoho_contract(data: Dict[str, Any]) -> Dict[str, Any]:
+    shipping_person = data.get('shippingPerson')
+    billing_person = data.get('billingPerson')
+    return {
+        'contact_name': shipping_person.get('name'),
+        'shipping_address': {
+            'address': shipping_person.get('street'),
+            'city': shipping_person.get('city'),
+            'state': shipping_person.get('stateOrProvinceCode'),
+            'zip': shipping_person.get('postalCode'),
+            'country': shipping_person.get('countryCode')
+        },
+        'billing_address': {
+            'address': billing_person.get('street'),
+            'city': billing_person.get('city'),
+            'state': billing_person.get('stateOrProvinceCode'),
+            'zip': billing_person.get('postalCode'),
+            'country': billing_person.get('countryCode')
+        },
+        'contact_persons': [{
+            'first_name': shipping_person.get('firstName'),
+            'last_name': shipping_person.get('lastName'),
+            'email': data.get('email')
+        }]
+    }
 
 async def handle_create_order_webhook(
     db: AsyncSession,
@@ -22,9 +46,20 @@ async def handle_create_order_webhook(
 ) -> None:
     payment_status = event_data.get('newPaymentStatus')
     order_id = event_data.get('orderId')
-    order_data = await ecwid_api.orders_client.get_order(order_id)
+    response_fields = 'email,items,shippingPerson,billingPerson'
+
+    order_data = await ecwid_api.orders_client.get_order(order_id, responseFields=response_fields)
+    customer_email = order_data.get('email')
+
+    if customers := (await zoho_api.contacts_client.list_contacts(email=customer_email)).get('contacts'):
+        customer_id = customers[0]['id']
+    else:
+        contact_payload = prepare_ecwid_data_for_zoho_contract(order_data)
+        customer_id = (await zoho_api.contacts_client.create_contact(**contact_payload))['id']
+
+    
     zoho_payload = {
-        'customer_id': CUSTOMER_ID,
+        'customer_id': customer_id,
         'line_items': []
     }
 
@@ -37,7 +72,6 @@ async def handle_create_order_webhook(
         })
 
     response = await zoho_api.sales_orders_client.create_sales_order(**zoho_payload)
-    print(response)
     zoho_order_id = str(response.get("salesorder", {}).get('salesorder_id'))
     await OrdersCRUD.create_entity(
         db, 
