@@ -35,7 +35,8 @@ def prepare_ecwid_data_for_zoho_contract(data: Dict[str, Any]) -> Dict[str, Any]
             'first_name': shipping_person.get('firstName'),
             'last_name': shipping_person.get('lastName'),
             'email': data.get('email')
-        }]
+        }],
+        
     }
 
 async def handle_create_order_webhook(
@@ -60,7 +61,8 @@ async def handle_create_order_webhook(
     
     zoho_payload = {
         'customer_id': customer_id,
-        'line_items': []
+        'line_items': [],
+        'notes': 'Sales order from Ecwid'
     }
 
     for item in order_data.get('items', []):
