@@ -110,6 +110,7 @@ async def handle_create_order_webhook(
             customers = (await zoho_api.contacts_client.list_contacts(email=customer_email)).get('contacts', [])
             
             if customers:
+                logging.info(customers)
                 customer_id = customers[0]['id']
                 logger.info(f"Found existing customer in Zoho with ID: {customer_id}")
             else:
