@@ -8,6 +8,8 @@ from zoho_api import ZohoApi
 
 from crud import ItemsCRUD, OrdersCRUD
 
+import logging
+
 UNPAID_STATUS = 'AWAITING_PAYMENT'
 PAID_STATUS = 'PAID'
 REFUND_STATUS = 'REFUNDED'
@@ -65,7 +67,7 @@ async def handle_create_order_webhook(
         'notes': 'Sales order from Ecwid'
     }
 
-    print(order_data.get('items', []))
+    logging.info(order_data.get('items', []))
 
     for item in order_data.get('items', []):
         db_item = await ItemsCRUD.find_one_or_none(db, ecwid_item_id=item.get('productId'))
@@ -75,10 +77,11 @@ async def handle_create_order_webhook(
             'quantity': item.get('quantity')
         })
 
-    print(zoho_payload)
+    logging.info(zoho_payload)
 
     response = await zoho_api.sales_orders_client.create_sales_order(**zoho_payload)
-    print(response)
+    
+    logging.info(response)
 
     zoho_order_id = str(response.get("salesorder", {}).get('salesorder_id'))
     await OrdersCRUD.create_entity(
