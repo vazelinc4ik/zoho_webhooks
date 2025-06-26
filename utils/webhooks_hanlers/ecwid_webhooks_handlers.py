@@ -79,6 +79,7 @@ async def handle_create_order_webhook(
     ecwid_api: EcwidApi,
     zoho_api: ZohoApi
 ) -> None:
+    logger.info(f"ZohoAPI: {zoho_api}")
     try:
         logger.info(f"Starting processing order webhook. Event data: {event_data}")
         
