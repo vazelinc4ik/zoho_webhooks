@@ -65,6 +65,8 @@ async def handle_create_order_webhook(
         'notes': 'Sales order from Ecwid'
     }
 
+    print(order_data.get('items', []))
+
     for item in order_data.get('items', []):
         db_item = await ItemsCRUD.find_one_or_none(db, ecwid_item_id=item.get('productId'))
         zoho_payload['line_items'].append({
@@ -73,7 +75,11 @@ async def handle_create_order_webhook(
             'quantity': item.get('quantity')
         })
 
+    print(zoho_payload)
+
     response = await zoho_api.sales_orders_client.create_sales_order(**zoho_payload)
+    print(response)
+
     zoho_order_id = str(response.get("salesorder", {}).get('salesorder_id'))
     await OrdersCRUD.create_entity(
         db, 
