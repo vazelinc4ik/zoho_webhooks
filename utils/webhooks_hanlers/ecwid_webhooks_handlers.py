@@ -111,7 +111,7 @@ async def handle_create_order_webhook(
             
             if customers:
                 logging.info(customers)
-                customer_id = customers[0]['id']
+                customer_id = customers[0]['customer_id']
                 logger.info(f"Found existing customer in Zoho with ID: {customer_id}")
             else:
                 logger.info("No existing customer found, creating new contact")
