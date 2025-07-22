@@ -97,9 +97,6 @@ class BaseHandler(ABC):
 
             await ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
 
-
-
-
 class InventoryAdjustmentHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
@@ -116,13 +113,13 @@ class InventoryAdjustmentHandler(BaseHandler):
         item: Dict[str, Any]
     ) -> int: return item.get('quantity_adjusted')
 
-    
+#TODO: переделать на проверку, кастомера созданного из эквид
 class SalesOrdersHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('salesorder', {})
-        if data.get('customer_id', '') ==  ECWID_CUSTOMER_ID:
+        if data.get('customer_id', '') == ECWID_CUSTOMER_ID:
             raise HTTPException(status_code=400, detail="Unsupported customer")
         return data.get('line_items', [])
     
@@ -143,6 +140,11 @@ class PurchaseOrdersHandfler(BaseHandler):
     def _get_quantity_change_from_item(
         item: Dict[str, Any]
     ) -> int: return item.get('quantity')
+
+class TransferOrdersHandler(BaseHandler):
+    @staticmethod
+    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
+        payload = await request.json()
 
 
 
