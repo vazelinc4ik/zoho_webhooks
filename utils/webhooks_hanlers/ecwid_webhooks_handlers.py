@@ -117,7 +117,7 @@ async def handle_create_order_webhook(
                 logger.info("No existing customer found, creating new contact")
                 contact_payload = prepare_ecwid_data_for_zoho_contract(order_data)
                 customer = await zoho_api.contacts_client.create_contact(**contact_payload)
-                customer_id = customer['id']
+                customer_id = customer['contact']['contact_id']
                 logger.info(f"Created new customer in Zoho with ID: {customer_id}")
                 
         except Exception as e:

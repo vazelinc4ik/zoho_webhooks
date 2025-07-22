@@ -4,8 +4,9 @@ from typing import Generic, TypeVar, Type, ClassVar, Any
 
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 
-from core import async_session_maker
+
 
 from models import (
     Items,
@@ -14,7 +15,7 @@ from models import (
     ZohoTokens
 )
 
-M = TypeVar('M')
+M = TypeVar('M', bound='DeclarativeBase')
 
 class BaseCRUD(Generic[M]):
     model: ClassVar[Type[M]]
