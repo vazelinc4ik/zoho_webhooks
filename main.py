@@ -23,44 +23,13 @@ from utils.security import (
     ZohoSalesWebhookValidator,
     ZohoInventoryWebhookValidator,
     ZohoPurchaseWebhookValidator,
+    ZohoTransferWebhookValidator,
     generate_zoho_auth_uri,
     generate_zoho_tokens_url,
 )
 from utils.webhooks_hanlers import *
 
 app = FastAPI()
-
-
-def setup_logger():
-    log_file = "/var/log/zoho_test.log"
-    
-    # Создаем директорию если не существует
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    
-    logger = logging.getLogger("ecwid_zoho_integration")
-    logger.setLevel(logging.DEBUG)
-    
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    
-    # Обработчик для файла
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)
-    
-    # Обработчик для консоли (опционально)
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.INFO)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-
-logger = setup_logger()
 
 @app.post("/zoho-webhooks/inventory-adjustment")
 async def adjust_eckwid_inventory_by_user_input(
@@ -113,14 +82,18 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 @app.post("/zoho-webhooks/transfer")
 async def adjust_eckwid_inventory_by_fbm_sale(
     request: Request,
-    is_signature_valid: bool = Depends(ZohoPurchaseWebhookValidator.validate_request),
+    is_signature_valid: bool = Depends(ZohoTransferWebhookValidator.validate_request),
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
-    payload = await request.json()
-    logger.info(json.dumps(payload, indent=4))
-    return {'status': 200}
-
+    if not is_signature_valid:
+        raise HTTPException(status_code=403, detail="Invalid signature")
+    
+    try:
+        await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+        return {"status": "ok"}
+    except HTTPException as exc:
+        return {"status": "no action taken", "message": exc.detail}
     
 @app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(

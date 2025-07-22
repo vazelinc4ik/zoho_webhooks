@@ -6,6 +6,7 @@ from .validators import (
     ZohoInventoryWebhookValidator,
     ZohoPurchaseWebhookValidator,
     ZohoSalesWebhookValidator,
+    ZohoTransferWebhookValidator
 )
 
 __all__ = [

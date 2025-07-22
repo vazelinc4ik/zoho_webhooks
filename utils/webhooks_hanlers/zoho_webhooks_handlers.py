@@ -81,8 +81,9 @@ class BaseHandler(ABC):
 
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
+        warehouse_id = item.get('warehouse_id', None)
         for item in items_data:
-            if item.get('warehouse_id') != TARGET_WH_ID:
+            if warehouse_id and warehouse_id != TARGET_WH_ID:
                 continue
             
             zoho_item_id = str(item.get('item_id'))
@@ -145,6 +146,11 @@ class TransferOrdersHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
+        data = payload.get('transfer_order', {})
+        return data.get('line_items', [])
 
-
+    @staticmethod
+    def _get_quantity_change_from_item(
+        item: Dict[str, Any]
+    ) -> int: return item.get('quantity_transfer')
 
