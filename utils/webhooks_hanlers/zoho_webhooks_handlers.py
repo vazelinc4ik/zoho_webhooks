@@ -81,8 +81,8 @@ class BaseHandler(ABC):
 
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
-        warehouse_id = item.get('warehouse_id', None)
         for item in items_data:
+            warehouse_id = item.get('warehouse_id', None)
             if warehouse_id and warehouse_id != TARGET_WH_ID:
                 continue
             
