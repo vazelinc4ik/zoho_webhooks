@@ -152,5 +152,5 @@ class TransferOrdersHandler(BaseHandler):
     @staticmethod
     def _get_quantity_change_from_item(
         item: Dict[str, Any]
-    ) -> int: return item.get('quantity_transfer')
+    ) -> int: return -item.get('quantity_transfer')
 
