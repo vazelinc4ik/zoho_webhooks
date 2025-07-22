@@ -183,6 +183,7 @@ class TransferOrdersHandler(BaseHandler):
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('transfer_order', {})
+        logger.info(json.dumps(data, indent=4))
         return data.get('line_items', [])
 
     @staticmethod
