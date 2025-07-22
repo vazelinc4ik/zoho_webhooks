@@ -90,7 +90,7 @@ async def adjust_eckwid_inventory_by_fbm_sale(
         raise HTTPException(status_code=403, detail="Invalid signature")
     
     try:
-        await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+        await TransferOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
         return {"status": "ok"}
     except HTTPException as exc:
         return {"status": "no action taken", "message": exc.detail}

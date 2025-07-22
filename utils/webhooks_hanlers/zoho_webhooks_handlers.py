@@ -130,7 +130,6 @@ class BaseHandler(ABC):
             )
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
-            logger.info(f"{zoho_item_id}: {quantity}")
 
             await ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
 
