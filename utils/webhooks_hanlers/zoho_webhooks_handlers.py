@@ -25,7 +25,7 @@ from models import (
 )
 
 TARGET_WH_ID = settings.zoho_settings.zoho_warehouse_id
-ECWID_CUSTOMER_ID = settings.zoho_settings.ecwid_customer_id
+AMAZON_CUSTOMER_ID = settings.zoho_settings.amazon_customer_id
 
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
@@ -117,13 +117,12 @@ class InventoryAdjustmentHandler(BaseHandler):
         item: Dict[str, Any]
     ) -> int: return item.get('quantity_adjusted')
 
-#TODO: переделать на проверку, кастомера созданного из эквид
 class SalesOrdersHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
         data = payload.get('salesorder', {})
-        if data.get('customer_id', '') == ECWID_CUSTOMER_ID:
+        if data.get('customer_id', '') != AMAZON_CUSTOMER_ID:
             raise HTTPException(status_code=400, detail="Unsupported customer")
         return data.get('line_items', [])
     
