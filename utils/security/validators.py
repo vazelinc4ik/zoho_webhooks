@@ -49,5 +49,5 @@ class ZohoPurchaseWebhookValidator(BaseValidator):
     secret_key = settings.zoho_settings.zoho_purchase_secret
 
 class ZohoTransferWebhookValidator(BaseValidator):
-    secret_key = settings.zoho_settings.zoho_purchase_secret 
+    secret_key = settings.zoho_settings.zoho_transfer_secret 
     
