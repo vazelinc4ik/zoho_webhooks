@@ -119,6 +119,7 @@ async def adjust_eckwid_inventory_by_fbm_sale(
 ) -> dict:
     payload = await request.json()
     logger.info(json.dumps(payload, indent=4))
+    return {'status': 200}
 
     
 @app.post("/ecwid-webhooks/sales")
