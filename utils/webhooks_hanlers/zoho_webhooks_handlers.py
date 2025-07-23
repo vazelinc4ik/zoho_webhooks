@@ -89,7 +89,7 @@ class BaseHandler(ABC):
             if warehouse_id and warehouse_id != TARGET_WH_ID:
                 continue
             
-            zoho_item_id = str(item.get('item_id'))
+            zoho_item_id = str(item.get('line_item_id'))
 
             db_item = await cls._find_item_entity_in_database(
                 store=store,
