@@ -157,9 +157,9 @@ class SalesOrdersHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
-        logger.info(json.dumps(payload, indent=4))
         data = payload.get('salesorder', {})
         if data.get('customer_id', '') != AMAZON_CUSTOMER_ID:
+            logger.error("Incorrect customer")
             raise HTTPException(status_code=400, detail="Unsupported customer")
         return data.get('line_items', [])
     
