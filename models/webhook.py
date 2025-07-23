@@ -14,7 +14,7 @@ from sqlalchemy.orm import (
 from .base import Base
 
 
-class Webhooks(Base):
+class Webhook(Base):
     __tablename__ = "webhooks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

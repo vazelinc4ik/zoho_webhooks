@@ -1,10 +1,5 @@
 
-
-from abc import ABC, abstractmethod
-import json
-import logging
-import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Protocol
 
 from fastapi import (
     HTTPException, 
@@ -16,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core import settings
 from crud import (
     ItemsCRUD,
-    StoresCRUD
+    StoresCRUD,
+    WebhookCRUD,
+    WebhookItemCRUD
 )
-
 from models import (
     Items, 
     Stores
@@ -29,19 +25,22 @@ AMAZON_CUSTOMER_ID = settings.zoho_settings.amazon_customer_id
 
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
-class BaseHandler(ABC):
-
+class WebhookHandlerProtocol(Protocol):
     @staticmethod
-    @abstractmethod 
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]: ...
 
     @staticmethod
-    @abstractmethod
-    def _get_quantity_change_from_item(
-        item: Dict[str, Any]
-    ) -> int: ...
+    def _get_quantity_change_from_item(item: Dict[str, Any]) -> int: ...
 
+    @classmethod
+    async def update_ecwid_stock_from_webhook(
+        cls,
+        request: Request,
+        ecwid_api: EcwidApi,
+        db: AsyncSession
+    ) -> Dict[str, dict]: ...
 
+class BaseHandler:
     @staticmethod
     def _get_store_from_request(request: Request) -> Stores: 
         return request.headers.get("x-com-zoho-organizationid")
@@ -75,15 +74,20 @@ class BaseHandler(ABC):
     
     @classmethod
     async def update_ecwid_stock_from_webhook(
-        cls,
+        cls: type["WebhookHandlerBase"],
         request: Request,
         ecwid_api: EcwidApi,
-        db: AsyncSession
+        db: AsyncSession,
+        webhook_type: str
     ) -> Dict[str, dict]:
         zoho_organization_id = cls._get_store_from_request(request)
 
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
+        webhook = await WebhookCRUD.create_entity(
+            db,
+            type=webhook_type
+        )
         for item in items_data:
             warehouse_id = item.get('warehouse_id', None)
             if warehouse_id and warehouse_id != TARGET_WH_ID:
@@ -100,6 +104,15 @@ class BaseHandler(ABC):
             quantity = cls._get_quantity_change_from_item(item)
 
             await ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
+            await WebhookItemCRUD.create_entity(
+                db,
+                webhook_id=webhook.id,
+                item_id=db_item.id,
+                quantity=quantity
+            )
+
+class WebhookHandlerBase(BaseHandler, WebhookHandlerProtocol, Protocol):
+    pass
 
 class InventoryAdjustmentHandler(BaseHandler):
     @staticmethod

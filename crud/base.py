@@ -12,7 +12,9 @@ from models import (
     Items,
     Orders,
     Stores,
-    ZohoTokens
+    ZohoTokens,
+    Webhook,
+    WebhookItem
 )
 
 M = TypeVar('M', bound='DeclarativeBase')
@@ -86,5 +88,9 @@ class ZohoTokensCRUD(BaseCRUD[ZohoTokens]):
         
         await cls.create_entity(db, access_token=access_token, refresh_token=refresh_token)
 
+class WebhookCRUD(BaseCRUD[Webhook]):
+    model = Webhook
 
+class WebhookItemCRUD(BaseCRUD[WebhookItem]):
+    model = WebhookItem
 

@@ -4,7 +4,8 @@ from .zoho_webhooks_handlers import (
     InventoryAdjustmentHandler,
     PurchaseOrdersHandfler,
     SalesOrdersHandler,
-    TransferOrdersHandler
+    TransferOrdersHandler,
+    WebhookHandlerProtocol
 )
 
 
@@ -13,5 +14,6 @@ __all__ = [
     "PurchaseOrdersHandfler",
     "SalesOrdersHandler",
     "TransferOrdersHandler",
+    "WebhookHandlerProtocol",
     "handle_ecwid_webhook"
 ]

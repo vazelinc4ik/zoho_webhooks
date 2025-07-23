@@ -1,99 +1,73 @@
-import json
-import logging
-import os
-from typing import List, Literal, Optional, Union
-
 from ecwid_api import EcwidApi
 from fastapi import (
     Depends, 
     FastAPI,
     HTTPException,
-    Query, 
+    Path,
     Request
 )
-from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from zoho_api import ZohoApi
 
-import requests
 
 from utils.generators import get_ecwid_api, get_db, get_zoho_api
-from crud import ZohoTokensCRUD
-from utils.security import (
-    ZohoSalesWebhookValidator,
-    ZohoInventoryWebhookValidator,
-    ZohoPurchaseWebhookValidator,
-    ZohoTransferWebhookValidator,
-    generate_zoho_auth_uri,
-    generate_zoho_tokens_url,
-)
+from utils.security import *
 from utils.webhooks_hanlers import *
 
 app = FastAPI()
 
-@app.post("/zoho-webhooks/inventory-adjustment")
-async def adjust_eckwid_inventory_by_user_input(
-    request: Request,
-    is_signature_valid: bool = Depends(ZohoInventoryWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api),
-    db: AsyncSession = Depends(get_db)
-) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
-    
-    try:
-        await InventoryAdjustmentHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-        return {"status": "ok"}
-    except HTTPException as exc:
-        return {"status": "no action taken", "message": exc.detail}
+def get_handler(
+    webhook_type: str,
+) -> type[WebhookHandlerProtocol]:
+    match webhook_type:
+        case "inventory-adjustment":
+            return InventoryAdjustmentHandler
+        case "sales":
+            return SalesOrdersHandler
+        case "purchase":
+            return PurchaseOrdersHandfler
+        case "transfer":
+            return TransferOrdersHandler
+        case _:
+            raise HTTPException(
+                status_code=400,
+                detail="Unknown webhook type"
+            )
+        
+def get_validator(
+    webhook_type: str = Path(...),
+) -> type[WebhookHandlerProtocol]:
+    match webhook_type:
+        case "inventory-adjustment":
+            return ZohoInventoryWebhookValidator
+        case "sales":
+            return ZohoSalesWebhookValidator
+        case "purchase":
+            return ZohoPurchaseWebhookValidator
+        case "transfer":
+            return ZohoTransferWebhookValidator
+        case _:
+            raise HTTPException(
+                status_code=400,
+                detail="Unknown webhook type"
+            )
 
 
-@app.post("/zoho-webhooks/sales")
-async def adjust_eckwid_inventory_by_fbm_sale(
+@app.post("/zoho-webhooks/{webhook_type}")
+async def adjust_eckwid_stock(
     request: Request,
-    is_signature_valid: bool = Depends(ZohoSalesWebhookValidator.validate_request),
+    db: AsyncSession = Depends(get_db),
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
-    db: AsyncSession = Depends(get_db)
+    handler: type[WebhookHandlerProtocol] = Depends(get_handler),
+    validator: type[WebhookValidatorProtocol] = Depends(get_validator),
 ) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
-    try:
-        await SalesOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-        return {"status": "ok"}
-    except HTTPException as exc:
-        return {"status": "no action taken", "message": exc.detail}
-
-@app.post("/zoho-webhooks/purchase")
-async def adjust_eckwid_inventory_by_fbm_sale(
-    request: Request,
-    is_signature_valid: bool = Depends(ZohoPurchaseWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api),
-    db: AsyncSession = Depends(get_db)
-) -> dict:
-    if not is_signature_valid:
+    if not validator.validate(request):
         raise HTTPException(status_code=403, detail="Invalid signature")
     
     try:
-        await PurchaseOrdersHandfler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+        await handler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
         return {"status": "ok"}
     except HTTPException as exc:
-        return {"status": "no action taken", "message": exc.detail}
-    
-@app.post("/zoho-webhooks/transfer")
-async def adjust_eckwid_inventory_by_fbm_sale(
-    request: Request,
-    is_signature_valid: bool = Depends(ZohoTransferWebhookValidator.validate_request),
-    ecwid_api: EcwidApi = Depends(get_ecwid_api),
-    db: AsyncSession = Depends(get_db)
-) -> dict:
-    if not is_signature_valid:
-        raise HTTPException(status_code=403, detail="Invalid signature")
-    
-    try:
-        await TransferOrdersHandler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
-        return {"status": "ok"}
-    except HTTPException as exc:
-        return {"status": "no action taken", "message": exc.detail}
+         return {"status": "no action taken", "message": exc.detail}
     
 @app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(

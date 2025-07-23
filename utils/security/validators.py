@@ -1,29 +1,41 @@
 import hmac
 import hashlib
 
-from typing import ClassVar
+from typing import ClassVar, Protocol
 
 from fastapi import (
-    Depends,
-    HTTPException
+    HTTPException,
+    Request
 )
-
 from core.config import settings
 
-from .helpers import (
-    get_payload,
-    get_zoho_signature
-)
+class WebhookValidatorProtocol(Protocol):
+    secret_key: ClassVar[str]
+
+    @classmethod
+    async def validate(
+        cls,
+        request: Request
+    ) -> bool: ...
 
 class BaseValidator:
     secret_key: ClassVar[str] = ""
 
+    @staticmethod
+    async def _get_payload(request: Request) -> bytes:
+        return await request.body() 
+
+    @staticmethod
+    async def _get_zoho_signature(request: Request) -> str:
+        return request.headers.get('x-zoho-webhook-signature')
+
     @classmethod
-    def validate_request(
+    async def validate(
         cls,
-        received_signature: str = Depends(get_zoho_signature),
-        payload: bytes = Depends(get_payload),
+        request: Request
     ) -> bool:
+        received_signature = await cls._get_zoho_signature(request)
+        payload = await cls._get_payload(request)
         if not cls.secret_key:
             raise NotImplementedError(f"{cls.__name__}: secret_key must be set in child class!")
         
