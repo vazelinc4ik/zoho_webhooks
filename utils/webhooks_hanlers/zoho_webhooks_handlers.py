@@ -116,6 +116,7 @@ class BaseHandler(ABC):
 
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
+        logger.info(json.dumps(items_data, indent=4))
         for item in items_data:
             logger.info(json.dumps(item, indent=4))
             warehouse_id = item.get('warehouse_id', None)
@@ -156,6 +157,7 @@ class SalesOrdersHandler(BaseHandler):
     @staticmethod
     async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
         payload = await request.json()
+        logger.info(json.dumps(payload, indent=4))
         data = payload.get('salesorder', {})
         if data.get('customer_id', '') != AMAZON_CUSTOMER_ID:
             raise HTTPException(status_code=400, detail="Unsupported customer")
