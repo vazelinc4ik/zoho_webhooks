@@ -27,38 +27,6 @@ from models import (
 TARGET_WH_ID = settings.zoho_settings.zoho_warehouse_id
 AMAZON_CUSTOMER_ID = settings.zoho_settings.amazon_customer_id
 
-
-def setup_logger():
-    log_file = "/var/log/zoho_test.log"
-    
-    # Создаем директорию если не существует
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    
-    logger = logging.getLogger("ecwid_zoho_integration")
-    logger.setLevel(logging.DEBUG)
-    
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    
-    # Обработчик для файла
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)
-    
-    # Обработчик для консоли (опционально)
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.INFO)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-
-logger = setup_logger()
-
 #TODO: Добавить отправку уведомлений в тг о несуществующем магазине или товаре
 
 class BaseHandler(ABC):
@@ -116,9 +84,7 @@ class BaseHandler(ABC):
 
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
         items_data = await cls._get_items_data_from_request(request)
-        logger.info(json.dumps(items_data, indent=4))
         for item in items_data:
-            logger.info(json.dumps(item, indent=4))
             warehouse_id = item.get('warehouse_id', None)
             if warehouse_id and warehouse_id != TARGET_WH_ID:
                 continue
@@ -132,8 +98,6 @@ class BaseHandler(ABC):
             )
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
-
-            logger.info(json.dumps(ecwid_item_id, quantity))
 
             await ecwid_api.products_client.adjust_product_stock(ecwid_item_id, quantity)
 
@@ -159,7 +123,6 @@ class SalesOrdersHandler(BaseHandler):
         payload = await request.json()
         data = payload.get('salesorder', {})
         if data.get('customer_id', '') != AMAZON_CUSTOMER_ID:
-            logger.error("Incorrect customer")
             raise HTTPException(status_code=400, detail="Unsupported customer")
         return data.get('line_items', [])
     
