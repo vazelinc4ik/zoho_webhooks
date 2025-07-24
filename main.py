@@ -55,6 +55,7 @@ def get_validator(
 @app.post("/zoho-webhooks/{webhook_type}")
 async def adjust_eckwid_stock(
     request: Request,
+    webhook_type: str,
     db: AsyncSession = Depends(get_db),
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     handler: type[WebhookHandlerProtocol] = Depends(get_handler),
@@ -64,7 +65,7 @@ async def adjust_eckwid_stock(
         raise HTTPException(status_code=403, detail="Invalid signature")
     
     try:
-        await handler.update_ecwid_stock_from_webhook(request, ecwid_api, db)
+        await handler.update_ecwid_stock_from_webhook(request, ecwid_api, db, webhook_type)
         return {"status": "ok"}
     except HTTPException as exc:
          return {"status": "no action taken", "message": exc.detail}

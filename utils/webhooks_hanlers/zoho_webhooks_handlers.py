@@ -37,7 +37,8 @@ class WebhookHandlerProtocol(Protocol):
         cls,
         request: Request,
         ecwid_api: EcwidApi,
-        db: AsyncSession
+        db: AsyncSession,
+        webhook_type: str
     ) -> Dict[str, dict]: ...
 
 class BaseHandler:
