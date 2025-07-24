@@ -19,7 +19,7 @@ class Webhook(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     type: Mapped[str] = mapped_column(String, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
 
     
