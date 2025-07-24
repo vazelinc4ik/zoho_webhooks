@@ -20,8 +20,8 @@ class WebhookItem(Base):
     __tablename__ = "webhook_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    webhook_id: Mapped[int] = mapped_column(Integer, ForeignKey(""), nullable=False)
-    item_id: Mapped[int] = mapped_column(Integer, ForeignKey(""), nullable=False)
+    webhook_id: Mapped[int] = mapped_column(Integer, ForeignKey("webhooks.id"), nullable=False)
+    item_id: Mapped[int] = mapped_column(Integer, ForeignKey("items.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     
 
