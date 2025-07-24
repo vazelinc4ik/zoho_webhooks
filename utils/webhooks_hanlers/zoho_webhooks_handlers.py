@@ -74,7 +74,7 @@ class BaseHandler:
     
     @classmethod
     async def update_ecwid_stock_from_webhook(
-        cls: type["WebhookHandlerBase"],
+        cls: type[WebhookHandlerProtocol],
         request: Request,
         ecwid_api: EcwidApi,
         db: AsyncSession,
@@ -110,9 +110,6 @@ class BaseHandler:
                 item_id=db_item.id,
                 quantity=quantity
             )
-
-class WebhookHandlerBase(BaseHandler, WebhookHandlerProtocol, Protocol):
-    pass
 
 class InventoryAdjustmentHandler(BaseHandler):
     @staticmethod
