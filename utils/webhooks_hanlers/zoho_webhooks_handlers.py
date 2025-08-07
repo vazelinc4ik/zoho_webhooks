@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Protocol
 
 from fastapi import (
     HTTPException, 
-    Request
 )
 from ecwid_api import EcwidApi
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +26,7 @@ AMAZON_CUSTOMER_ID = settings.zoho_settings.amazon_customer_id
 
 class WebhookHandlerProtocol(Protocol):
     @staticmethod
-    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]: ...
+    async def _get_items_data_from_request(payload: dict) -> List[Dict[str, Any]]: ...
 
     @staticmethod
     def _get_quantity_change_from_item(item: Dict[str, Any]) -> int: ...
@@ -35,17 +34,14 @@ class WebhookHandlerProtocol(Protocol):
     @classmethod
     async def update_ecwid_stock_from_webhook(
         cls,
-        request: Request,
+        data: dict,
+        store_id: str,
         ecwid_api: EcwidApi,
         db: AsyncSession,
         webhook_type: str
     ) -> Dict[str, dict]: ...
 
 class BaseHandler:
-    @staticmethod
-    def _get_store_from_request(request: Request) -> Stores: 
-        return request.headers.get("x-com-zoho-organizationid")
-    
     @staticmethod
     async def _find_store_entity_in_database(
         db: AsyncSession,
@@ -76,15 +72,14 @@ class BaseHandler:
     @classmethod
     async def update_ecwid_stock_from_webhook(
         cls: type[WebhookHandlerProtocol],
-        request: Request,
+        payload: dict,
+        zoho_organization_id: str,
         ecwid_api: EcwidApi,
         db: AsyncSession,
         webhook_type: str
     ) -> Dict[str, dict]:
-        zoho_organization_id = cls._get_store_from_request(request)
-
         store = await cls._find_store_entity_in_database(db, zoho_organization_id=zoho_organization_id)
-        items_data = await cls._get_items_data_from_request(request)
+        items_data = await cls._get_items_data_from_request(payload)
         webhook = await WebhookCRUD.create_entity(
             db,
             type=webhook_type
@@ -101,7 +96,7 @@ class BaseHandler:
                 db=db,
                 zoho_item_id=zoho_item_id
             )
-            
+
             if not db_item:
                 continue
 
@@ -118,8 +113,8 @@ class BaseHandler:
 
 class InventoryAdjustmentHandler(BaseHandler):
     @staticmethod
-    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
-        payload = await request.json()
+    async def _get_items_data_from_request(payload: dict) -> List[Dict[str, Any]]:
+
         data = payload.get('inventory_adjustment', {})
 
         if data.get('adjustment_type', "") != "quantity":
@@ -134,8 +129,7 @@ class InventoryAdjustmentHandler(BaseHandler):
 
 class SalesOrdersHandler(BaseHandler):
     @staticmethod
-    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
-        payload = await request.json()
+    async def _get_items_data_from_request(payload: dict) -> List[Dict[str, Any]]:
         data = payload.get('salesorder', {})
         if data.get('customer_id', '') != AMAZON_CUSTOMER_ID:
             raise HTTPException(status_code=400, detail="Unsupported customer")
@@ -149,8 +143,7 @@ class SalesOrdersHandler(BaseHandler):
 
 class PurchaseOrdersHandfler(BaseHandler):
     @staticmethod
-    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
-        payload = await request.json()
+    async def _get_items_data_from_request(payload: dict) -> List[Dict[str, Any]]:
         data = payload.get('purchaseorder', {})
         return data.get('line_items', [])
     
@@ -161,8 +154,7 @@ class PurchaseOrdersHandfler(BaseHandler):
 
 class TransferOrdersHandler(BaseHandler):
     @staticmethod
-    async def _get_items_data_from_request(request: Request) -> List[Dict[str, Any]]:
-        payload = await request.json()
+    async def _get_items_data_from_request(payload: dict) -> List[Dict[str, Any]]:
         data = payload.get('transfer_order', {})
         return data.get('line_items', [])
 

@@ -66,7 +66,9 @@ async def adjust_eckwid_stock(
     if not validator.validate(request):
         raise HTTPException(status_code=403, detail="Invalid signature")
     try:
-        background_tasks.add_task(handler.update_ecwid_stock_from_webhook, request, ecwid_api, db, webhook_type)
+        payload = await request.json()
+        zoho_organization_id = request.headers.get("x-com-zoho-organizationid")
+        background_tasks.add_task(handler.update_ecwid_stock_from_webhook, payload, zoho_organization_id, ecwid_api, db, webhook_type)
         return {"status": "received"}
     except HTTPException as exc:
         return {"status": "no action taken", "message": exc.detail}
