@@ -1,5 +1,6 @@
 from ecwid_api import EcwidApi
 from fastapi import (
+    BackgroundTasks,
     Depends, 
     FastAPI,
     HTTPException,
@@ -56,6 +57,7 @@ def get_validator(
 async def adjust_eckwid_stock(
     request: Request,
     webhook_type: str,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     ecwid_api: EcwidApi = Depends(get_ecwid_api),
     handler: type[WebhookHandlerProtocol] = Depends(get_handler),
@@ -63,12 +65,13 @@ async def adjust_eckwid_stock(
 ) -> dict:
     if not validator.validate(request):
         raise HTTPException(status_code=403, detail="Invalid signature")
-    
     try:
-        await handler.update_ecwid_stock_from_webhook(request, ecwid_api, db, webhook_type)
-        return {"status": "ok"}
+        background_tasks.add_task(handler.update_ecwid_stock_from_webhook, request, ecwid_api, db, webhook_type)
+        return {"status": "received"}
     except HTTPException as exc:
-         return {"status": "no action taken", "message": exc.detail}
+        return {"status": "no action taken", "message": exc.detail}
+    
+
     
 @app.post("/ecwid-webhooks/sales")
 async def create_zoho_inventory_sales_order(

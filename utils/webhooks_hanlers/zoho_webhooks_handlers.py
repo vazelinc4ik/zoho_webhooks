@@ -101,6 +101,10 @@ class BaseHandler:
                 db=db,
                 zoho_item_id=zoho_item_id
             )
+            
+            if not db_item:
+                continue
+
             ecwid_item_id = db_item.ecwid_item_id
             quantity = cls._get_quantity_change_from_item(item)
 
