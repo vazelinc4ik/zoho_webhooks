@@ -49,5 +49,5 @@ urllib3==2.4.0
 uvicorn==0.34.2
 watchfiles==1.0.5
 websockets==15.0.1
-./lib/ecwid_api-0.1.1-py3-none-any.whl
-./lib/zoho_api-0.1.0-py3-none-any.whl
+./app/lib/ecwid_api-0.1.1-py3-none-any.whl
+./app/lib/zoho_api-0.1.0-py3-none-any.whl
