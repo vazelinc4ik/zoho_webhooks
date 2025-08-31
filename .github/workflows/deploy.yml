@@ -37,4 +37,4 @@ jobs:
           fi
 
       - name: Restart service
-        run: sudo systemctl restart pineventry.service
+        run: sudo systemctl restart pineventory.service
