@@ -20,9 +20,8 @@ jobs:
 
       - name: Ensure venv
         run: |
-          python3 -V
-          python3 -m venv ~/app-venv || true
-          ~/app-venv/bin/pip install -U pip wheel
+            python3.13 -m venv ~/app-venv || true
+            ~/app-venv/bin/pip install -U pip wheel
 
       - name: Install deps
         run: |
