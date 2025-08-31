@@ -12,11 +12,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-venv python3-pip rsync
-
       - name: Ensure deploy dir exists
         run: mkdir -p /home/vazelinc4ik/pineventory
 
