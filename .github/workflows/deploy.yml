@@ -17,8 +17,8 @@ jobs:
 
       - name: Sync to deploy dir
         run: |
-          rsync -a --delete --exclude '.git' --exclude '.github' ./ /home/vazelinc4ik/pineventory/
-
+          rsync -a --delete --exclude '.git' --exclude '.github' --exclude '.env' ./ /home/vazelinc4ik/pineventory/
+          
       - name: Ensure venv
         run: |
           python3 -V
