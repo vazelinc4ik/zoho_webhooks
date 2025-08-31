@@ -13,24 +13,24 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ensure deploy dir exists
-        run: mkdir -p /home/vazelinc4ik/zoho-webhooks
+        run: mkdir -p /home/vazelinc4ik/pineventory
 
       - name: Sync to deploy dir
         run: |
-          rsync -a --delete --exclude '.git' --exclude '.github' ./ /home/vazelinc4ik/zoho-webhooks/
+          rsync -a --delete --exclude '.git' --exclude '.github' ./ /home/vazelinc4ik/pineventory/
 
       - name: Ensure venv
         run: |
-            python3.13 -m venv ~/app-venv || true
-            ~/app-venv/bin/pip install -U pip wheel
+            python3 -m venv ~/pineventoryapp-venv || true
+            ~/pineventory/app-venv/bin/pip install -U pip wheel
 
       - name: Install deps
         run: |
-          ~/app-venv/bin/pip install -r /home/vazelinc4ik/zoho-webhooks/requirements.txt
+          ~/app-venv/bin/pip install -r /home/vazelinc4ik/pineventory/requirements.txt
 
       - name: Migrate DB (optional)
         run: |
-          cd /home/vazelinc4ik/zoho-webhooks
+          cd /home/vazelinc4ik/pineventory
           if [ -f alembic.ini ] || [ -d alembic ]; then
             ~/app-venv/bin/alembic upgrade head || true
           fi
