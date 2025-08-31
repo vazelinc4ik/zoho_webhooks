@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure deploy dir exists
+        run: mkdir -p /home/vazelinc4ik/zoho-webhooks
+
+      - name: Sync to deploy dir
+        run: |
+          rsync -a --delete --exclude '.git' --exclude '.github' ./ /home/vazelinc4ik/zoho-webhooks/
+
+      - name: Ensure venv
+        run: |
+          python3 -V
+          python3 -m venv ~/app-venv || true
+          ~/app-venv/bin/pip install -U pip wheel
+
+      - name: Install deps
+        run: |
+          ~/app-venv/bin/pip install -r /home/vazelinc4ik/zoho-webhooks/requirements.txt
+
+      - name: Migrate DB (optional)
+        run: |
+          cd /home/vazelinc4ik/zoho-webhooks
+          if [ -f alembic.ini ] || [ -d alembic ]; then
+            ~/app-venv/bin/alembic upgrade head || true
+          fi
+
+      - name: Restart service
+        run: sudo systemctl restart pineventry.service
