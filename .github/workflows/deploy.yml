@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-pip rsync
+
       - name: Ensure deploy dir exists
         run: mkdir -p /home/vazelinc4ik/pineventory
 
@@ -21,18 +26,19 @@ jobs:
 
       - name: Ensure venv
         run: |
-            python3 -m venv ~/pineventory/app-venv || true
-            ~/pineventory/app-venv/bin/pip install -U pip wheel
+          python3 -V
+          python3 -m venv /home/vazelinc4ik/pineventory/app-venv || true
+          /home/vazelinc4ik/pineventory/app-venv/bin/python -m pip install -U pip setuptools wheel
 
       - name: Install deps
         run: |
-          ~/app-venv/bin/pip install -r /home/vazelinc4ik/pineventory/requirements.txt
+          /home/vazelinc4ik/pineventory/app-venv/bin/pip install -r /home/vazelinc4ik/pineventory/requirements.txt
 
       - name: Migrate DB (optional)
         run: |
           cd /home/vazelinc4ik/pineventory
           if [ -f alembic.ini ] || [ -d alembic ]; then
-            ~/app-venv/bin/alembic upgrade head || true
+            /home/vazelinc4ik/pineventory/app-venv/bin/alembic upgrade head || true
           fi
 
       - name: Restart service
