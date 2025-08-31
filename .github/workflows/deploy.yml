@@ -21,7 +21,7 @@ jobs:
 
       - name: Ensure venv
         run: |
-            python3 -m venv ~/pineventoryapp-venv || true
+            python3 -m venv ~/pineventory/app-venv || true
             ~/pineventory/app-venv/bin/pip install -U pip wheel
 
       - name: Install deps
